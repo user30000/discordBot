@@ -4,7 +4,7 @@ import com.uzok.uzokBot.utils.MessageEventContext;
 import reactor.core.publisher.Mono;
 
 public class Help extends BaseCommand {
-    public Help() {
+    Help() {
         commandName = "help";
     }
 

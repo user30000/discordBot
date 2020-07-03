@@ -7,7 +7,7 @@ import reactor.core.publisher.Mono;
 
 public class Subscribe extends BaseCommand {
 
-    public Subscribe() {
+    Subscribe() {
         commandName = "sub";
         shortDescription = "Подписка на стримы пользователя";
         description = "Принимает на вход тэг пользователя.\nЕсли этот пользователь начинает трансляцию на Twitch.tv то бот отправит сообщение в личный чат об этом событии.";

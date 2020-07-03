@@ -56,13 +56,12 @@ public class JavaToMySQL {
         return result;
     }
 
-    public Object executeCall(BaseSqlProcedure procedure) {
-        Object result = null;
+    public void executeCall(BaseSqlProcedure procedure) {
         try {
             con = DriverManager.getConnection(url, user, password);
             cstmt = con.prepareCall(procedure.sqlQuery);
             rs = cstmt.executeQuery();
-            result = procedure.execute(rs);
+            procedure.execute(rs);
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
             sqlEx.getMessage();
@@ -84,7 +83,6 @@ public class JavaToMySQL {
                 se.printStackTrace();
             }
         }
-        return result;
     }
 
 }

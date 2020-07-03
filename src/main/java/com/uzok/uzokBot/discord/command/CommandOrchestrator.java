@@ -13,7 +13,7 @@ public class CommandOrchestrator {
     private final Map<String, BaseCommand> commandsMap;
 
     private CommandOrchestrator() {
-        commandsMap = init(new Subscribe(), new Unsubscribe(), new Test(), new TwitchInfo(), new Help());
+        commandsMap = init(new Subscribe(), new Unsubscribe(), new Test(), new TwitchInfo(), new Help(), new About());
     }
 
 
@@ -29,7 +29,7 @@ public class CommandOrchestrator {
         return commandsMap.get(commandName);
     }
 
-    public Map<String, BaseCommand> getCommands() {
+    Map<String, BaseCommand> getCommands() {
         return commandsMap;
     }
 

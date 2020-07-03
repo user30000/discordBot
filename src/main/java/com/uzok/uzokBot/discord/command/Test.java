@@ -7,14 +7,14 @@ import reactor.core.publisher.Mono;
 import java.time.Instant;
 
 public class Test extends BaseCommand {
-    public Test() {
+    Test() {
         commandName = "test";
     }
 
     @Override
     public Mono<Void> execute(MessageEventContext context) {
         return context.getChannel().flatMap(channel -> channel.createEmbed(spec -> spec.setColor(new Color(255, 0, 0))
-                                .setAuthor(context.getUsername(), null, context.getAvatarUrl())//, ANY_URL, IMAGE_URL)
+                                .setAuthor(context.getUsername(), null, context.getAvatarUrl())
                                 .setImage(context.getAvatarUrl())
                                 .setTitle("setTitle/setUrl")
                                 .setUrl("https://www.twitch.tv/user30000")

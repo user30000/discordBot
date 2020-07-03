@@ -35,7 +35,7 @@ public class DiscordBot {
         gateway.getEventDispatcher().on(eventListener.getEventType()).flatMap(eventListener::execute).subscribe();
     }
 
-    public static GatewayDiscordClient getDiscordClient(){
+    static GatewayDiscordClient getDiscordClient(){
         return discordClient;
     }
 }

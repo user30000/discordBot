@@ -1,6 +1,10 @@
 package com.uzok.uzokBot.twitch;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.uzok.uzokBot.twitch.responses.GamesResponse;
+import com.uzok.uzokBot.twitch.responses.StreamsResponse;
+import com.uzok.uzokBot.twitch.responses.UserFollowsResponse;
+import com.uzok.uzokBot.twitch.responses.UsersResponse;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -10,15 +14,10 @@ import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
-import com.uzok.uzokBot.twitch.responses.GamesResponse;
-import com.uzok.uzokBot.twitch.responses.StreamsResponse;
-import com.uzok.uzokBot.twitch.responses.UserFollowsResponse;
-import com.uzok.uzokBot.twitch.responses.UsersResponse;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ public class Client {
 
     private Token tkn;
     private String client_id;
-    private String client_secret;
     private HttpClientBuilder httpClientBuilder;
     final private String grant_type;
 
@@ -52,12 +50,11 @@ public class Client {
 
     public void build(String clientId, String clientSecret) throws IOException {
         this.client_id = clientId;
-        this.client_secret = clientSecret;
 
         HttpPost post = new HttpPost("https://id.twitch.tv/oauth2/token");
         List<BasicNameValuePair> nameValuePairs = new ArrayList<>(3);
         nameValuePairs.add(new BasicNameValuePair("client_id", client_id));
-        nameValuePairs.add(new BasicNameValuePair("client_secret", client_secret));
+        nameValuePairs.add(new BasicNameValuePair("client_secret", clientSecret));
         nameValuePairs.add(new BasicNameValuePair("grant_type", grant_type));
         post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
         HttpResponse response = httpClientBuilder.build().execute(post);
@@ -116,13 +113,7 @@ public class Client {
         post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
         prepareRequest(post);
-        HttpResponse response = httpClientBuilder.build().execute(post);
-
-        URI requestUri = getRequestUrl("webhooks/subscriptions", null);
-        JSONObject json = executeGetRequest(requestUri);
-
-//        JSONObject json = parseResponse(response);
-//        this.tkn = new ObjectMapper().readValue(json.toString(), Token.class);
+        httpClientBuilder.build().execute(post);
     }
 
     private JSONObject executeGetRequest(URI requestUri) throws IOException {

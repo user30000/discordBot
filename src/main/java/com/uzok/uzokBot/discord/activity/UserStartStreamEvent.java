@@ -19,7 +19,7 @@ public class UserStartStreamEvent extends BaseActivityEvent {
     //    private GatewayDiscordClient discordClient;
     private static Map<String, String> twitchDiscordUsersMap;
 
-    public UserStartStreamEvent() {
+    UserStartStreamEvent() {
         activityEventName = "userStartStream";
         if (twitchDiscordUsersMap == null) {
             twitchDiscordUsersMap = new LinkedHashMap<>();
@@ -55,29 +55,11 @@ public class UserStartStreamEvent extends BaseActivityEvent {
             if (usersResponse.data.isEmpty()) {
                 return Mono.empty();
             }
-
+//todo Возможно, если стрим начнется без игры, то дискорд не зачекает этого.
             Client.getInstance().postSubOnStreamChange(usersResponse.data.get(0).id);
 
-//            StreamsResponse streamsResponse = Client.getInstance().getStreamInfo(twitchUserName);
-//            Stream stream = streamsResponse.data.get(0);
-//            String gameId = stream.game_id;
-//            GamesResponse gamesResponse = Client.getInstance().getGameInfo(gameId);
-
-//            return (discordClient.getUsers().filter(User -> subs.contains(User.getTag())).flatMap(User::getPrivateChannel))
-//                    .flatMap(channel -> channel.createEmbed(
-//                            spec -> spec.setColor(new Color(255, 0, 0))
-//                                    .setAuthor(user.display_name, null, user.profile_image_url)//, ANY_URL, IMAGE_URL)
-//                                    .setImage(stream.thumbnail_url.replace("{width}x{height}", "440x248"))
-//                                    .setTitle(stream.title)
-//                                    .setUrl(streamingUrl)
-//                                    .addField("Стримит", gamesResponse.data.get(0).name, true)
-//                                    .setThumbnail(gamesResponse.data.get(0).box_art_url.replace("{width}x{height}", "285x380"))
-//                                    .setFooter("Для отписки напиши !unsub " + userTag, null)
-//                                    .setTimestamp(Instant.now())))
-//                    .then();
         } catch (Exception e) {
             e.printStackTrace();
-//            return Mono.empty();
         }
         return Mono.empty();
     }

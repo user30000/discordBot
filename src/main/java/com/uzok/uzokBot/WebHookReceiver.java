@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import com.uzok.uzokBot.discord.activity.UserStartStreamEvent;
 import com.uzok.uzokBot.dataBase.GetSubscribersByUserTag;
 import com.uzok.uzokBot.dataBase.JavaToMySQL;
+import com.uzok.uzokBot.discord.activity.UserStartStreamEvent;
 import com.uzok.uzokBot.twitch.Client;
 import com.uzok.uzokBot.twitch.dtos.Stream;
 import com.uzok.uzokBot.twitch.responses.GamesResponse;
@@ -14,7 +14,6 @@ import com.uzok.uzokBot.twitch.responses.WebHookStreamResponse;
 import com.uzok.uzokBot.utils.Prop;
 import discord4j.core.object.entity.User;
 import discord4j.rest.util.Color;
-import org.apache.tomcat.jni.Proc;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -29,11 +28,11 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
-public class WebHookReceiver {
+class WebHookReceiver {
 
     private static WebHookReceiver instance;
 
-    public static void start() {
+    static void start() {
         if (instance == null) {
             try {
                 instance = new WebHookReceiver();
@@ -97,7 +96,7 @@ public class WebHookReceiver {
                     DiscordBot.getDiscordClient().getUsers().filter(User -> subs.contains(User.getTag())).flatMap(User::getPrivateChannel)
                             .flatMap(channel -> channel.createEmbed(
                                     spec -> spec.setColor(new Color(255, 0, 0))
-                                            .setAuthor(stream.user_name, null, null)//, ANY_URL, IMAGE_URL)
+                                            .setAuthor(stream.user_name, null, null)
                                             .setImage(stream.thumbnail_url.replace("{width}x{height}", "440x248"))
                                             .setTitle(stream.title)
                                             .setUrl("https://www.twitch.tv/" + stream.user_name)

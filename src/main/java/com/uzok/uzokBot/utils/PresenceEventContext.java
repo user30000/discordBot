@@ -7,9 +7,6 @@ import reactor.core.publisher.Mono;
 
 public class PresenceEventContext {
     private final PresenceUpdateEvent event;
-    //private final String commandName;
-    //@Nullable
-    //private final String arg;
 
     public PresenceEventContext(PresenceUpdateEvent event) {
         this.event = event;
