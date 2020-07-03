@@ -1,0 +1,7 @@
+*.properties
+*.log
+*.bat
+*.exe
+/out
+/target/
+/.idea
