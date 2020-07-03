@@ -109,9 +109,8 @@ public class Client {
     public void postSubOnStreamChange(String userId) throws IOException {
         HttpPost post = new HttpPost("https://api.twitch.tv/helix/webhooks/hub");
         List<BasicNameValuePair> nameValuePairs = new ArrayList<>(4);
-        nameValuePairs.add(new BasicNameValuePair("hub.callback", "http://37.193.12.82:6666/streamHook"));
+        nameValuePairs.add(new BasicNameValuePair("hub.callback", "http://37.193.12.82:6667/streamHook"));
         nameValuePairs.add(new BasicNameValuePair("hub.mode", "subscribe"));
-//        nameValuePairs.add(new BasicNameValuePair("hub.topic", "https://api.twitch.tv/helix/users/follows?first=1&to_id=" + userId));
         nameValuePairs.add(new BasicNameValuePair("hub.topic", "https://api.twitch.tv/helix/streams?user_id=" + userId));
         nameValuePairs.add(new BasicNameValuePair("hub.lease_seconds", "300"));
         post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
