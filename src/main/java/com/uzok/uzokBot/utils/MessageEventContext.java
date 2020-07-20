@@ -2,6 +2,7 @@ package com.uzok.uzokBot.utils;
 
 import discord4j.core.event.domain.message.MessageCreateEvent;
 import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.Member;
 import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
@@ -36,7 +37,15 @@ public class MessageEventContext {
         return this.event.getGuildId();
     }
 
-    public boolean isPrivateChannel(){
+    public Mono<MessageChannel> getChannel() {
+        return this.getMessage().getChannel();
+    }
+
+    public Snowflake getChannelId() {
+        return this.getMessage().getChannelId();
+    }
+
+    public boolean isPrivateChannel() {
         return !getGuildId().isPresent();
     }
 
@@ -44,8 +53,16 @@ public class MessageEventContext {
         return this.event.getMessage();
     }
 
+    public Optional<Member> getMember() {
+        return this.event.getMember();
+    }
+
     public User getAuthor() {
         return this.getMessage().getAuthor().orElseThrow(NullPointerException::new);
+    }
+
+    public boolean isOwner() {
+        return getMember().equals(getGuild().flatMap(Guild::getOwner).blockOptional());
     }
 
     public String getUsername() {
@@ -54,10 +71,6 @@ public class MessageEventContext {
 
     public String getAvatarUrl() {
         return this.getAuthor().getAvatarUrl();
-    }
-
-    public Mono<MessageChannel> getChannel() {
-        return this.getMessage().getChannel();
     }
 
     public String getCommandName() {

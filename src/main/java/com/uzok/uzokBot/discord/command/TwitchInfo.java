@@ -33,7 +33,6 @@ public class TwitchInfo extends BaseCommand {
             StreamsResponse streamsResponse = Client.getInstance().getStreamInfo(userName);
             if(streamsResponse.data.isEmpty()){
                 return context.getChannel().flatMap(channel -> channel.createEmbed(
-//                buildContent(context)
                         spec -> spec.setColor(new Color(255, 0, 0))
                                 .setAuthor(user.display_name, null, user.profile_image_url)
                                 .setImage(user.offline_image_url)
