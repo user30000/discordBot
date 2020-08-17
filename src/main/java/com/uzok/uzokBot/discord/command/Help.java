@@ -3,9 +3,11 @@ package com.uzok.uzokBot.discord.command;
 import com.uzok.uzokBot.utils.MessageEventContext;
 import reactor.core.publisher.Mono;
 
+import java.util.Arrays;
+
 public class Help extends BaseCommand {
     Help() {
-        commandName = "help";
+        commandNames = new String[]{"help"};
     }
 
     @Override
@@ -15,7 +17,7 @@ public class Help extends BaseCommand {
             StringBuilder commandsStringBuilder = new StringBuilder().append("Доступные команды:\n");
 
             CommandOrchestrator.getInstance().getCommands().forEach((s, baseCommand) -> {
-                commandsStringBuilder.append("!").append(baseCommand.commandName);
+                commandsStringBuilder.append("!").append(Arrays.toString(baseCommand.commandNames));
                 if (baseCommand.shortDescription != null) {
                     commandsStringBuilder.append(" - ").append(baseCommand.shortDescription);
                 }

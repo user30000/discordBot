@@ -8,7 +8,7 @@ import com.uzok.uzokBot.utils.MessageEventContext;
 public class Unsubscribe extends BaseCommand {
 
     Unsubscribe() {
-        commandName = "unsub";
+        commandNames = new String[]{"unsub"};
         shortDescription = "Отписка от стримов пользователя";
         description = "Принимает на вход тэг пользователя.\nОтписка от личных сообщений о начале стрима данного пользователя";
         example = "!unsub userName#0000";

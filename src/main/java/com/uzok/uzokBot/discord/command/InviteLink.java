@@ -5,7 +5,7 @@ import reactor.core.publisher.Mono;
 
 public class InviteLink extends BaseCommand {
     public InviteLink() {
-        commandName = "invite";
+        commandNames = new String[]{"invite"};
     }
 
     @Override

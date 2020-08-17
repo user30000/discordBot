@@ -6,7 +6,7 @@ import reactor.core.publisher.Mono;
 
 public class About extends BaseCommand {
     About() {
-        commandName = "about";
+        commandNames = new String[]{"about"};
     }
 
     @Override

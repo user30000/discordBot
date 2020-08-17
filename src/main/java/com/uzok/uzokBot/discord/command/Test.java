@@ -8,7 +8,7 @@ import java.time.Instant;
 
 public class Test extends BaseCommand {
     Test() {
-        commandName = "test";
+        commandNames = new String[]{"test"};
     }
 
     @Override

@@ -15,7 +15,7 @@ import java.time.Instant;
 
 public class TwitchInfo extends BaseCommand {
     TwitchInfo() {
-        commandName = "twitch";
+        commandNames = new String[]{"twitch"};
     }
 
     @Override

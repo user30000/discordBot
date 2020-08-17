@@ -13,13 +13,21 @@ public class CommandOrchestrator {
     private final Map<String, BaseCommand> commandsMap;
 
     private CommandOrchestrator() {
-        commandsMap = init(new Subscribe(), new Unsubscribe(), new TwitchInfo(), new Help(), new About(), new InviteLink());
+        commandsMap = init(new Subscribe(),
+                new Unsubscribe(),
+                new TwitchInfo(),
+                new Help(),
+                new About(),
+                new InviteLink(),
+                // new Randomizer(),
+                new Weather());
     }
 
     private Map<String, BaseCommand> init(BaseCommand... commands) {
         final Map<String, BaseCommand> map = new HashMap<>();
         for (final BaseCommand command : commands) {
-            map.put(command.commandName, command);
+            for (String commandName : command.commandNames)
+                map.put(commandName, command);
         }
         return map;
     }

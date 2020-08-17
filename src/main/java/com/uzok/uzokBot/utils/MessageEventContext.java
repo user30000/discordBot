@@ -7,6 +7,7 @@ import discord4j.core.object.entity.Message;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.rest.util.Snowflake;
+import org.apache.commons.cli.*;
 import reactor.core.publisher.Mono;
 import reactor.util.annotation.Nullable;
 
@@ -22,7 +23,7 @@ public class MessageEventContext {
         this.event = event;
         final String[] splittedContent = event.getMessage().getContent().split(" ", 2);
         commandName = splittedContent[0].substring(1).toLowerCase();
-        arg = splittedContent.length > 1 ? splittedContent[1] : null;
+        arg = splittedContent.length > 1 ? splittedContent[1] : "";
     }
 
     public MessageCreateEvent getEvent() {
@@ -79,5 +80,23 @@ public class MessageEventContext {
 
     public String getArg() {
         return arg;
+    }
+
+    public CommandLine getCommandLine() {
+        Options options = new Options();
+        return getCommandLine(options);
+    }
+
+    public CommandLine getCommandLine(Options options) {
+        CommandLineParser parser = new DefaultParser();
+        try {
+            if (options == null) {
+                return getCommandLine();
+            }
+            return parser.parse(options, arg.split(" "));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
