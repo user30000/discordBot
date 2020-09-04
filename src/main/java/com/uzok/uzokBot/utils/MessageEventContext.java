@@ -93,7 +93,7 @@ public class MessageEventContext {
             if (options == null) {
                 return getCommandLine();
             }
-            return parser.parse(options, arg.split(" "));
+            return parser.parse(options, arg.split(" "), true);
         } catch (ParseException e) {
             e.printStackTrace();
             return null;

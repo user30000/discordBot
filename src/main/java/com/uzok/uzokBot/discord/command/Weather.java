@@ -47,7 +47,7 @@ public class Weather extends BaseCommand {
         try {
             HttpResponse response = httpClientBuilder.build().execute(httpGet);
 
-            if (commandLine.hasOption("i")) {
+            if (commandLine.hasOption("i") && !commandLine.hasOption("f")) {
                 return image(context, response);
             }
 
@@ -124,7 +124,7 @@ public class Weather extends BaseCommand {
 
     private URI getRequestUrl(CommandLine commandLine) {
         String additionalPath = String.join(" ", commandLine.getArgs());
-        if (commandLine.hasOption("i")) {
+        if (commandLine.hasOption("i") && !commandLine.hasOption("f")) {
             additionalPath += ".png";
         }
         URIBuilder builder = new URIBuilder()
