@@ -7,7 +7,7 @@
     <groupId>com.uzok</groupId>
     <artifactId>discordBot</artifactId>
     <packaging>jar</packaging>
-    <version>0.4-BETA</version>
+    <version>0.5-BETA</version>
     <build>
         <plugins>
             <plugin>
