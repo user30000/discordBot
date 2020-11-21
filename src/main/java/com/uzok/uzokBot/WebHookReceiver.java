@@ -6,14 +6,15 @@ import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
 import com.uzok.uzokBot.dataBase.GetSubscribersByUserTag;
 import com.uzok.uzokBot.dataBase.JavaToMySQL;
-import com.uzok.uzokBot.discord.activity.UserStartStreamEvent;
+import com.uzok.uzokBot.dataBase.ResetSubscriptionTimeProcedure;
 import com.uzok.uzokBot.twitch.Client;
 import com.uzok.uzokBot.twitch.dtos.Stream;
 import com.uzok.uzokBot.twitch.responses.GamesResponse;
+import com.uzok.uzokBot.twitch.responses.UsersResponse;
 import com.uzok.uzokBot.twitch.responses.WebHookStreamResponse;
+import com.uzok.uzokBot.utils.Logger;
 import com.uzok.uzokBot.utils.Prop;
 import discord4j.core.object.entity.Guild;
-import discord4j.core.object.entity.User;
 import discord4j.core.object.entity.channel.MessageChannel;
 import discord4j.rest.util.Color;
 import org.json.JSONObject;
@@ -40,7 +41,7 @@ class WebHookReceiver {
             try {
                 instance = new WebHookReceiver();
             } catch (Exception e) {
-                //
+                Logger.write(e.getMessage());
             }
         }
     }
@@ -50,6 +51,7 @@ class WebHookReceiver {
         int serverPort = Prop.getInt("webHookPort");
         HttpServer server = HttpServer.create(new InetSocketAddress(serverAddress, serverPort), 0);
         server.createContext("/streamHook", new WebHookHttpHandler());
+        server.createContext("/pingHook", new PingWebHookHttpHandler());
         server.setExecutor(Executors.newFixedThreadPool(10));
         server.start();
     }
@@ -57,10 +59,10 @@ class WebHookReceiver {
     private static class WebHookHttpHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange httpExchange) throws IOException {
+            Logger.write("WebHookHandler receive message");
             switch (httpExchange.getRequestMethod()) {
                 case "GET":
                     Map<String, String> query_pairs = new LinkedHashMap<>();
-                    System.out.println(httpExchange.getRequestURI().getQuery());
                     String[] pairs = httpExchange.getRequestURI().getQuery().split("&");
                     for (String pair : pairs) {
                         int ind = pair.indexOf("=");
@@ -72,9 +74,16 @@ class WebHookReceiver {
                     response.write(challenge.getBytes());
                     response.flush();
                     response.close();
+
+                    String streamerId = query_pairs.get("hub.topic").replaceAll("[^\\d]", "");
+                    UsersResponse streamer = Client.getInstance().getUserInfo(Integer.parseInt(streamerId));
+                    JavaToMySQL.getInstance().executeCall(new ResetSubscriptionTimeProcedure(streamer.data.get(0).display_name));
+
+                    Logger.write("Response on twitch subscription challenge request\n" + httpExchange.getRequestURI().getQuery());
                     break;
 
                 case "POST":
+                    Logger.write("Twitch send post request with channel changing data");
                     httpExchange.sendResponseHeaders(200, 0);
                     String result = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()))
                             .lines().collect(Collectors.joining("\n"));
@@ -82,6 +91,7 @@ class WebHookReceiver {
                     WebHookStreamResponse streamResponse = new ObjectMapper().readValue((new JSONObject(result)).toString(), WebHookStreamResponse.class);
 
                     if (streamResponse.data.isEmpty()) {
+                        Logger.write("Stream data is empty");
                         return;
                     }
 
@@ -89,40 +99,18 @@ class WebHookReceiver {
                     String gameId = stream.game_id;
                     GamesResponse gamesResponse = Client.getInstance().getGameInfo(gameId);
 
-                    String userTag = UserStartStreamEvent.getDiscordTagByTwitchName(stream.user_name);
-                    if (userTag == null) {
-                        return;
-                    }
+                    List<GetSubscribersByUserTag.subscriber> subs = (List<GetSubscribersByUserTag.subscriber>)
+                            (JavaToMySQL.getInstance().executeQuery(new GetSubscribersByUserTag(stream.user_name)));
 
-                    List<GetSubscribersByUserTag.subscriber> subs = (List<GetSubscribersByUserTag.subscriber>) (new JavaToMySQL().executeQuery(new GetSubscribersByUserTag(userTag)));
-
-                    List<String> usersTags = new LinkedList<>();
                     List<Long> guildsIds = new LinkedList<>();
                     List<Long> channelsIds = new LinkedList<>();
 
                     subs.forEach(subscriber -> {
-                        if (subscriber.subTag != null) {
-                            usersTags.add(subscriber.subTag);
-                        } else {
+                        if (subscriber.subTag == null) {
                             guildsIds.add(subscriber.guidSnowflake);
                             channelsIds.add(subscriber.channelSnowflake);
                         }
                     });
-
-                    DiscordBot.getDiscordClient()
-                            .getUsers()
-                            .filter(User -> usersTags.contains(User.getTag()))
-                            .flatMap(User::getPrivateChannel)
-                            .flatMap(channel -> channel.createEmbed(
-                                    spec -> spec.setColor(new Color(255, 0, 0))
-                                            .setAuthor(stream.user_name, null, null)
-                                            .setImage(stream.thumbnail_url.replace("{width}x{height}", "440x248"))
-                                            .setTitle(stream.title)
-                                            .setUrl("https://www.twitch.tv/" + stream.user_name)
-                                            .addField("Стримит", gamesResponse.data.get(0).name, true)
-                                            .setThumbnail(gamesResponse.data.get(0).box_art_url.replace("{width}x{height}", "285x380"))
-                                            .setFooter("Для отписки напиши !unsub " + userTag, null)
-                                            .setTimestamp(Instant.now()))).blockLast();
 
                     DiscordBot.getDiscordClient()
                             .getGuilds()
@@ -131,18 +119,38 @@ class WebHookReceiver {
                             .filter(channel -> channelsIds.contains(channel.getId().asLong()))
                             .flatMap(channel ->
                                     ((MessageChannel) channel).createMessage(message -> message.setEmbed(
-                                            spec -> spec.setColor(new Color(255, 0, 0))
+                                            spec -> spec.setColor(Color.of(255, 0, 0))
                                                     .setAuthor(stream.user_name, null, null)
                                                     .setImage(stream.thumbnail_url.replace("{width}x{height}", "440x248"))
                                                     .setTitle(stream.title)
                                                     .setUrl("https://www.twitch.tv/" + stream.user_name)
-                                                    .addField("Стримит", gamesResponse.data.get(0).name, true)
+                                                    .addField("Стримит", stream.game_name, true)
                                                     .setThumbnail(gamesResponse.data.get(0).box_art_url.replace("{width}x{height}", "285x380"))
-                                                    .setFooter("Для отписки напиши !unsub " + userTag, null)
                                                     .setTimestamp(Instant.now())))
                             ).blockLast();
-
+                    Logger.write("Send " + subs.size() + " messages about stream starting; Username = " + stream.user_name + " UserTag = " + stream.user_name);
                     break;
+            }
+        }
+    }
+
+    private static class PingWebHookHttpHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange httpExchange) throws IOException {
+            if ("GET".equals(httpExchange.getRequestMethod())) {
+                Map<String, String> query_pairs = new LinkedHashMap<>();
+                String[] pairs = httpExchange.getRequestURI().getQuery().split("&");
+                for (String pair : pairs) {
+                    int ind = pair.indexOf("=");
+                    query_pairs.put(pair.substring(0, ind), pair.substring(ind + 1));
+                }
+                OutputStream response = httpExchange.getResponseBody();
+                String challenge = query_pairs.get("hub.challenge");
+                httpExchange.sendResponseHeaders(200, challenge.length());
+                response.write(challenge.getBytes());
+                response.flush();
+                response.close();
+                Logger.write("Get request by Twitch ping WebHook\n" + httpExchange.getRequestURI().getQuery());
             }
         }
     }

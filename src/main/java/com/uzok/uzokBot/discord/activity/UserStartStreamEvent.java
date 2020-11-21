@@ -1,22 +1,26 @@
 package com.uzok.uzokBot.discord.activity;
 
+import com.uzok.uzokBot.DiscordBot;
 import com.uzok.uzokBot.dataBase.GetSubscribersByUserTag;
 import com.uzok.uzokBot.dataBase.JavaToMySQL;
 import com.uzok.uzokBot.twitch.Client;
+import com.uzok.uzokBot.twitch.dtos.Stream;
+import com.uzok.uzokBot.twitch.responses.GamesResponse;
+import com.uzok.uzokBot.twitch.responses.StreamsResponse;
 import com.uzok.uzokBot.twitch.responses.UsersResponse;
 import com.uzok.uzokBot.utils.PresenceEventContext;
+import discord4j.core.object.entity.Guild;
+import discord4j.core.object.entity.channel.MessageChannel;
+import discord4j.rest.util.Color;
 import reactor.core.publisher.Mono;
 
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.time.Duration;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.time.Instant;
+import java.util.*;
 
 public class UserStartStreamEvent extends BaseActivityEvent {
-    //    private GatewayDiscordClient discordClient;
     private static Map<String, String> twitchDiscordUsersMap;
 
     UserStartStreamEvent() {
@@ -24,7 +28,6 @@ public class UserStartStreamEvent extends BaseActivityEvent {
         if (twitchDiscordUsersMap == null) {
             twitchDiscordUsersMap = new LinkedHashMap<>();
         }
-//        discordClient = com.uzok.uzokBot.DiscordBot.getDiscordClient();
     }
 
     @Override
@@ -32,7 +35,8 @@ public class UserStartStreamEvent extends BaseActivityEvent {
         String userTag = Objects.requireNonNull(context.getUser().block(Duration.ofMillis(100))).getTag();
         String twitchUserName;
 
-        List<String> subs = (List<String>) (new JavaToMySQL().executeQuery(new GetSubscribersByUserTag(userTag)));
+        List<GetSubscribersByUserTag.subscriber> subs = (List<GetSubscribersByUserTag.subscriber>)
+                (JavaToMySQL.getInstance().executeQuery(new GetSubscribersByUserTag(userTag)));
 
         if (subs.isEmpty()) {
             return Mono.empty();
@@ -55,6 +59,63 @@ public class UserStartStreamEvent extends BaseActivityEvent {
             if (usersResponse.data.isEmpty()) {
                 return Mono.empty();
             }
+
+            StreamsResponse streamsResponse = Client.getInstance().getStreamInfo(twitchUserName);
+            if (!streamsResponse.data.isEmpty()) {
+                List<String> usersTags = new LinkedList<>();
+                List<Long> guildsIds = new LinkedList<>();
+                List<Long> channelsIds = new LinkedList<>();
+
+                Stream stream = streamsResponse.data.get(0);
+                String gameId = stream.game_id;
+                GamesResponse gamesResponse = Client.getInstance().getGameInfo(gameId);
+
+
+                subs.forEach(subscriber -> {
+                    if (subscriber.subTag != null) {
+                        usersTags.add(subscriber.subTag);
+                    } else {
+                        guildsIds.add(subscriber.guidSnowflake);
+                        channelsIds.add(subscriber.channelSnowflake);
+                    }
+                });
+
+                DiscordBot.getDiscordClient()
+                        .getUsers()
+                        .filter(User -> usersTags.contains(User.getTag()))
+                        .flatMap(discord4j.core.object.entity.User::getPrivateChannel)
+                        .flatMap(channel -> channel.createEmbed(
+                                spec -> spec.setColor(Color.of(255, 0, 0))
+                                        .setAuthor(stream.user_name, null, null)
+                                        .setImage(stream.thumbnail_url.replace("{width}x{height}", "440x248"))
+                                        .setTitle(stream.title)
+                                        .setUrl("https://www.twitch.tv/" + stream.user_name)
+                                        .addField("Стримит", gamesResponse.data.get(0).name, true)
+                                        .setThumbnail(gamesResponse.data.get(0).box_art_url.replace("{width}x{height}", "285x380"))
+                                        .setFooter("Для отписки напиши !unsub " + userTag, null)
+                                        .setTimestamp(Instant.now()))).blockLast();
+
+                DiscordBot.getDiscordClient()
+                        .getGuilds()
+                        .filter(guild -> guildsIds.contains(guild.getId().asLong()))
+                        .flatMap(Guild::getChannels)
+                        .filter(channel -> channelsIds.contains(channel.getId().asLong()))
+                        .flatMap(channel ->
+                                ((MessageChannel) channel).createMessage(message -> message.setEmbed(
+                                        spec -> spec.setColor(Color.of(255, 0, 0))
+                                                .setAuthor(stream.user_name, null, null)
+                                                .setImage(stream.thumbnail_url.replace("{width}x{height}", "440x248"))
+                                                .setTitle(stream.title)
+                                                .setUrl("https://www.twitch.tv/" + stream.user_name)
+                                                .addField("Стримит", gamesResponse.data.get(0).name, true)
+                                                .setThumbnail(gamesResponse.data.get(0).box_art_url.replace("{width}x{height}", "285x380"))
+                                                .setFooter("Для отписки напиши !unsub " + userTag, null)
+                                                .setTimestamp(Instant.now())))
+                        ).blockLast();
+
+                return Mono.empty();
+            }
+
 //todo Возможно, если стрим начнется без игры, то дискорд не зачекает этого.
             Client.getInstance().postSubOnStreamChange(usersResponse.data.get(0).id);
 
@@ -64,7 +125,7 @@ public class UserStartStreamEvent extends BaseActivityEvent {
         return Mono.empty();
     }
 
-    public static String getDiscordTagByTwitchName(String twitchName){
+    public static String getDiscordTagByTwitchName(String twitchName) {
         return twitchDiscordUsersMap.remove(twitchName);
     }
 }

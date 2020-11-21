@@ -5,6 +5,8 @@ import com.uzok.uzokBot.twitch.responses.GamesResponse;
 import com.uzok.uzokBot.twitch.responses.StreamsResponse;
 import com.uzok.uzokBot.twitch.responses.UserFollowsResponse;
 import com.uzok.uzokBot.twitch.responses.UsersResponse;
+import com.uzok.uzokBot.utils.Logger;
+import com.uzok.uzokBot.utils.Prop;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -21,6 +23,7 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -73,6 +76,16 @@ public class Client {
         return new ObjectMapper().readValue(json.toString(), UsersResponse.class);
     }
 
+    public UsersResponse getUserInfo(int userId) throws IOException {
+        List<NameValuePair> ids = new ArrayList<>();
+
+        ids.add(new BasicNameValuePair("id", String.valueOf(userId)));
+        URI requestUri = getRequestUrl("users", ids);
+
+        JSONObject json = executeGetRequest(requestUri);
+        return new ObjectMapper().readValue(json.toString(), UsersResponse.class);
+    }
+
     public UserFollowsResponse getUserFollowers(String toId) throws IOException {
         List<NameValuePair> userIds = new ArrayList<>();
 
@@ -106,14 +119,44 @@ public class Client {
     public void postSubOnStreamChange(String userId) throws IOException {
         HttpPost post = new HttpPost("https://api.twitch.tv/helix/webhooks/hub");
         List<BasicNameValuePair> nameValuePairs = new ArrayList<>(4);
-        nameValuePairs.add(new BasicNameValuePair("hub.callback", "http://37.193.12.82:6667/streamHook"));
+        nameValuePairs.add(new BasicNameValuePair("hub.callback", "http://37.193.12.82:" + Prop.getProp("webHookPort") + "/streamHook"));
         nameValuePairs.add(new BasicNameValuePair("hub.mode", "subscribe"));
         nameValuePairs.add(new BasicNameValuePair("hub.topic", "https://api.twitch.tv/helix/streams?user_id=" + userId));
-        nameValuePairs.add(new BasicNameValuePair("hub.lease_seconds", "300"));
+        nameValuePairs.add(new BasicNameValuePair("hub.lease_seconds", Prop.getProp("sub_time")));
         post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
         prepareRequest(post);
         httpClientBuilder.build().execute(post);
+        Logger.write("Initiate subscribe on twitch channel update. UserId = " + userId);
+    }
+
+    public void postUnsubOnStreamChange(String userId) throws IOException {
+        HttpPost post = new HttpPost("https://api.twitch.tv/helix/webhooks/hub");
+        List<BasicNameValuePair> nameValuePairs = new ArrayList<>(4);
+        nameValuePairs.add(new BasicNameValuePair("hub.callback", "http://37.193.12.82:" + Prop.getProp("webHookPort") + "/streamHook"));
+        nameValuePairs.add(new BasicNameValuePair("hub.mode", "unsubscribe"));
+        nameValuePairs.add(new BasicNameValuePair("hub.topic", "https://api.twitch.tv/helix/streams?user_id=" + userId));
+        nameValuePairs.add(new BasicNameValuePair("hub.lease_seconds", Prop.getProp("sub_time")));
+        post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+        prepareRequest(post);
+        httpClientBuilder.build().execute(post);
+        Logger.write("Initiate subscribe on twitch channel update. UserId = " + userId);
+    }
+
+    public void postPingSubOnStreamChange() throws IOException {
+        HttpPost post = new HttpPost("https://api.twitch.tv/helix/webhooks/hub");
+        List<BasicNameValuePair> nameValuePairs = new ArrayList<>(4);
+        nameValuePairs.add(new BasicNameValuePair("hub.callback", "http://37.193.12.82:" + Prop.getProp("webHookPort") + "/pingHook"));
+        nameValuePairs.add(new BasicNameValuePair("hub.mode", "subscribe"));
+        nameValuePairs.add(new BasicNameValuePair("hub.topic", "https://api.twitch.tv/helix/streams?user_id=0"));
+        nameValuePairs.add(new BasicNameValuePair("hub.lease_seconds", "0"));
+        post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
+        prepareRequest(post);
+        httpClientBuilder.build().execute(post);
+
+        Logger.write("Initiate fake subscribe on twitch channel update for ping");
     }
 
     private JSONObject executeGetRequest(URI requestUri) throws IOException {

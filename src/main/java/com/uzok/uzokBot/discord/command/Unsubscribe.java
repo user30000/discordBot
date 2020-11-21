@@ -21,7 +21,7 @@ public class Unsubscribe extends BaseCommand {
             return Mono.empty();
         }
         try {
-            new JavaToMySQL().executeCall(new UnsubscribeProcedure(context.getArg(), context.getAuthor().getTag()));
+            JavaToMySQL.getInstance().executeCall(new UnsubscribeProcedure(context.getArg(), context.getAuthor().getTag()));
         }catch (Exception e){
             return Mono.empty();
         }

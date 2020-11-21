@@ -7,7 +7,7 @@
     <groupId>com.uzok</groupId>
     <artifactId>discordBot</artifactId>
     <packaging>jar</packaging>
-    <version>0.5-BETA</version>
+    <version>0.6-BETA</version>
     <build>
         <plugins>
             <plugin>
@@ -85,7 +85,7 @@
         <dependency>
             <groupId>com.discord4j</groupId>
             <artifactId>discord4j-core</artifactId>
-            <version>3.1.0.RC1</version>
+            <version>3.2.0-M1</version>
         </dependency>
         <dependency>
             <groupId>org.reactivestreams</groupId>

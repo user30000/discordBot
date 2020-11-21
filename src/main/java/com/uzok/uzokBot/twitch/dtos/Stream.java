@@ -7,6 +7,7 @@ public class Stream {
     public String user_id;
     public String user_name;
     public String game_id;
+    public String game_name;
     public String type;
     public String title;
     public String started_at;

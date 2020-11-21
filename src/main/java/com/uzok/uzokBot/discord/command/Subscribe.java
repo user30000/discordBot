@@ -1,18 +1,24 @@
 package com.uzok.uzokBot.discord.command;
 
+import com.uzok.uzokBot.dataBase.CheckStreamIntoDB;
 import com.uzok.uzokBot.dataBase.JavaToMySQL;
 import com.uzok.uzokBot.dataBase.SubscribeProcedure;
+import com.uzok.uzokBot.twitch.Client;
+import com.uzok.uzokBot.twitch.responses.UsersResponse;
+import com.uzok.uzokBot.utils.Logger;
 import com.uzok.uzokBot.utils.MessageEventContext;
 import org.apache.commons.cli.*;
 import reactor.core.publisher.Mono;
+
+import java.io.IOException;
 
 public class Subscribe extends BaseCommand {
 
     Subscribe() {
         commandNames = new String[]{"sub"};
-        shortDescription = "Подписка на стримы пользователя";
-        description = "Принимает на вход тэг пользователя.\nЕсли этот пользователь начинает трансляцию на Twitch.tv то бот отправит сообщение в личный чат об этом событии.";
-        example = "!sub userName#0000";
+        shortDescription = "Подписка на стримы твич пользователя";
+        description = "Принимает на вход название канала.\nБот отправит сообщение в личный чат оначале стрима.";
+        example = "!sub twitchuser";
     }
 
     @Override
@@ -27,9 +33,30 @@ public class Subscribe extends BaseCommand {
         if (commandLine == null || commandLine.getArgs().length != 1) {
             return Mono.empty();
         }
-        String streamerTag = commandLine.getArgs()[0];
-        if (streamerTag == null || streamerTag.isEmpty() || !streamerTag.matches("\\S+#\\d{4}")) {
+        String streamerTag = commandLine.getArgs()[0].toLowerCase();
+        if (streamerTag.isEmpty()) {
             return Mono.empty();
+        }
+
+        //check twitch for username
+        UsersResponse usersResponse;
+        try {
+            usersResponse = Client.getInstance().getUserInfo(streamerTag);
+        } catch (IOException e) {
+            Logger.write(e.getMessage() + " when command was " + context.getCommandLine());
+            return Mono.empty();
+        }
+        if (usersResponse.data.isEmpty()) {
+            return Mono.empty();
+        }
+
+        //check username into DB
+        if (!(boolean) (JavaToMySQL.getInstance().executeQuery(new CheckStreamIntoDB(streamerTag)))) {
+            try {
+                Client.getInstance().postSubOnStreamChange(usersResponse.data.get(0).id);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
 
         if (commandLine.hasOption("c")) {
@@ -38,13 +65,13 @@ public class Subscribe extends BaseCommand {
                 if (commandLine.hasOption("e")) {
                     isEveryone = true;
                 }
-                new JavaToMySQL().executeCall(new SubscribeProcedure(streamerTag, context.getGuildId().get().asLong(), context.getChannelId().asLong(), isEveryone));
+                JavaToMySQL.getInstance().executeCall(new SubscribeProcedure(streamerTag, context.getGuildId().get().asLong(), context.getChannelId().asLong(), isEveryone));
                 return context.getChannel().flatMap(channel -> channel.createMessage("Ты подписался на " + streamerTag))
                         .then();
             }
         } else {
-            //user subscribe 4 himself
-            new JavaToMySQL().executeCall(new SubscribeProcedure(streamerTag, context.getAuthor().getTag()));
+            //user subscribe by himself
+            JavaToMySQL.getInstance().executeCall(new SubscribeProcedure(streamerTag, context.getAuthor().getTag()));
             return context.getChannel().flatMap(channel -> channel.createMessage("Ты подписался на " + streamerTag))
                     .then();
         }

@@ -33,7 +33,7 @@ public class TwitchInfo extends BaseCommand {
             StreamsResponse streamsResponse = Client.getInstance().getStreamInfo(userName);
             if(streamsResponse.data.isEmpty()){
                 return context.getChannel().flatMap(channel -> channel.createEmbed(
-                        spec -> spec.setColor(new Color(255, 0, 0))
+                        spec -> spec.setColor(Color.of(255, 0, 0))
                                 .setAuthor(user.display_name, null, user.profile_image_url)
                                 .setImage(user.offline_image_url)
                                 .setTitle("Stream offline")
@@ -48,12 +48,12 @@ public class TwitchInfo extends BaseCommand {
             GamesResponse gamesResponse = Client.getInstance().getGameInfo(gameId);
 
             return context.getChannel().flatMap(channel -> channel.createEmbed(
-                    spec -> spec.setColor(new Color(255, 0, 0))
+                    spec -> spec.setColor(Color.of(255, 0, 0))
                             .setAuthor(user.display_name, null, user.profile_image_url)
                             .setImage(stream.thumbnail_url.replace("{width}x{height}", "440x248"))
                             .setTitle(stream.title)
                             .setUrl("https://www.twitch.tv/" + user.display_name)
-                            .addField("Стримит", gamesResponse.data.get(0).name, true)
+                            .addField("Стримит", stream.game_name, true)
                             .addField("Зрители", String.valueOf(stream.viewer_count), true)
                             .setThumbnail(gamesResponse.data.get(0).box_art_url.replace("{width}x{height}", "285x380"))
                             .setTimestamp(Instant.now())))

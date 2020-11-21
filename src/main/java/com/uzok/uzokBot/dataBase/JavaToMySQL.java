@@ -12,6 +12,8 @@ import java.sql.*;
  */
 public class JavaToMySQL {
 
+    private static JavaToMySQL instance;
+
     // JDBC URL, username and password of MySQL server
     private static final String url = Prop.getProp("connectionString");
     private static final String user = Prop.getProp("sqlLogin");
@@ -23,8 +25,15 @@ public class JavaToMySQL {
     private static CallableStatement cstmt;
     private static ResultSet rs;
 
-    public JavaToMySQL() {
+    private JavaToMySQL() {
 
+    }
+
+    public static JavaToMySQL getInstance() {
+        if (instance == null){
+            instance = new JavaToMySQL();
+        }
+        return instance;
     }
 
     public Object executeQuery(BaseSqlProcedure procedure) {
@@ -61,7 +70,6 @@ public class JavaToMySQL {
             con = DriverManager.getConnection(url, user, password);
             cstmt = con.prepareCall(procedure.sqlQuery);
             rs = cstmt.executeQuery();
-            procedure.execute(rs);
         } catch (SQLException sqlEx) {
             sqlEx.printStackTrace();
             sqlEx.getMessage();

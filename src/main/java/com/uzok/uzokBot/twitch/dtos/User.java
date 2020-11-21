@@ -12,4 +12,5 @@ public class User {
     public String type;
     public long view_count;
     public String email;
+    public String created_at;
 }

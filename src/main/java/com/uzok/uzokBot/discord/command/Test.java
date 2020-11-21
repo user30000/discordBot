@@ -13,7 +13,7 @@ public class Test extends BaseCommand {
 
     @Override
     public Mono<Void> execute(MessageEventContext context) {
-        return context.getChannel().flatMap(channel -> channel.createEmbed(spec -> spec.setColor(new Color(255, 0, 0))
+        return context.getChannel().flatMap(channel -> channel.createEmbed(spec -> spec.setColor(Color.of(255, 0, 0))
                                 .setAuthor(context.getUsername(), null, context.getAvatarUrl())
                                 .setImage(context.getAvatarUrl())
                                 .setTitle("setTitle/setUrl")
