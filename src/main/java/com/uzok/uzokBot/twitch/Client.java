@@ -1,5 +1,6 @@
 package com.uzok.uzokBot.twitch;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uzok.uzokBot.twitch.responses.GamesResponse;
 import com.uzok.uzokBot.twitch.responses.StreamsResponse;
@@ -23,7 +24,6 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.StringJoiner;
 
@@ -37,11 +37,16 @@ public class Client {
     private Token tkn;
     private String client_id;
     private HttpClientBuilder httpClientBuilder;
+
+    private static ObjectMapper objectMapper;
     final private String grant_type;
 
     private Client() {
         grant_type = "client_credentials";
         httpClientBuilder = HttpClientBuilder.create();
+
+        objectMapper = new ObjectMapper();
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     public static Client getInstance() {
@@ -63,7 +68,7 @@ public class Client {
         HttpResponse response = httpClientBuilder.build().execute(post);
 
         JSONObject json = parseResponse(response);
-        this.tkn = new ObjectMapper().readValue(json.toString(), Token.class);
+        this.tkn = objectMapper.readValue(json.toString(), Token.class);
     }
 
     public UsersResponse getUserInfo(String userName) throws IOException {
@@ -73,7 +78,7 @@ public class Client {
         URI requestUri = getRequestUrl("users", logins);
 
         JSONObject json = executeGetRequest(requestUri);
-        return new ObjectMapper().readValue(json.toString(), UsersResponse.class);
+        return objectMapper.readValue(json.toString(), UsersResponse.class);
     }
 
     public UsersResponse getUserInfo(int userId) throws IOException {
@@ -83,7 +88,7 @@ public class Client {
         URI requestUri = getRequestUrl("users", ids);
 
         JSONObject json = executeGetRequest(requestUri);
-        return new ObjectMapper().readValue(json.toString(), UsersResponse.class);
+        return objectMapper.readValue(json.toString(), UsersResponse.class);
     }
 
     public UserFollowsResponse getUserFollowers(String toId) throws IOException {
@@ -93,7 +98,7 @@ public class Client {
         URI requestUri = getRequestUrl("users/follows", userIds);
 
         JSONObject json = executeGetRequest(requestUri);
-        return new ObjectMapper().readValue(json.toString(), UserFollowsResponse.class);
+        return objectMapper.readValue(json.toString(), UserFollowsResponse.class);
     }
 
     public StreamsResponse getStreamInfo(String userName) throws IOException {
@@ -103,7 +108,7 @@ public class Client {
         URI requestUri = getRequestUrl("streams", logins);
 
         JSONObject json = executeGetRequest(requestUri);
-        return new ObjectMapper().readValue(json.toString(), StreamsResponse.class);
+        return objectMapper.readValue(json.toString(), StreamsResponse.class);
     }
 
     public GamesResponse getGameInfo(String gameId) throws IOException {
@@ -113,7 +118,7 @@ public class Client {
         URI requestUri = getRequestUrl("games", gameIds);
 
         JSONObject json = executeGetRequest(requestUri);
-        return new ObjectMapper().readValue(json.toString(), GamesResponse.class);
+        return objectMapper.readValue(json.toString(), GamesResponse.class);
     }
 
     public void postSubOnStreamChange(String userId) throws IOException {

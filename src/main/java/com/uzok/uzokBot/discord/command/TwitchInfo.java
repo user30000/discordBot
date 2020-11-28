@@ -50,7 +50,10 @@ public class TwitchInfo extends BaseCommand {
             return context.getChannel().flatMap(channel -> channel.createEmbed(
                     spec -> spec.setColor(Color.of(255, 0, 0))
                             .setAuthor(user.display_name, null, user.profile_image_url)
-                            .setImage(stream.thumbnail_url.replace("{width}x{height}", "440x248"))
+                            .setImage(stream.thumbnail_url
+                                    .replace("{width}x{height}", "440x248")
+                                    .concat("?r=")
+                                    .concat(String.valueOf(System.currentTimeMillis())))
                             .setTitle(stream.title)
                             .setUrl("https://www.twitch.tv/" + user.display_name)
                             .addField("Стримит", stream.game_name, true)

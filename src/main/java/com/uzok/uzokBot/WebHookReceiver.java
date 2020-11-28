@@ -99,16 +99,16 @@ class WebHookReceiver {
                     String gameId = stream.game_id;
                     GamesResponse gamesResponse = Client.getInstance().getGameInfo(gameId);
 
-                    List<GetSubscribersByUserTag.subscriber> subs = (List<GetSubscribersByUserTag.subscriber>)
-                            (JavaToMySQL.getInstance().executeQuery(new GetSubscribersByUserTag(stream.user_name)));
+                    List<?> subs = (List<?>) (JavaToMySQL.getInstance().executeQuery(new GetSubscribersByUserTag(stream.user_name)));
 
                     List<Long> guildsIds = new LinkedList<>();
                     List<Long> channelsIds = new LinkedList<>();
 
                     subs.forEach(subscriber -> {
-                        if (subscriber.subTag == null) {
-                            guildsIds.add(subscriber.guidSnowflake);
-                            channelsIds.add(subscriber.channelSnowflake);
+                        GetSubscribersByUserTag.subscriber castedSub = (GetSubscribersByUserTag.subscriber) subscriber;
+                        if (castedSub.subTag == null) {
+                            guildsIds.add(castedSub.guidSnowflake);
+                            channelsIds.add(castedSub.channelSnowflake);
                         }
                     });
 
@@ -121,7 +121,10 @@ class WebHookReceiver {
                                     ((MessageChannel) channel).createMessage(message -> message.setEmbed(
                                             spec -> spec.setColor(Color.of(255, 0, 0))
                                                     .setAuthor(stream.user_name, null, null)
-                                                    .setImage(stream.thumbnail_url.replace("{width}x{height}", "440x248"))
+                                                    .setImage(stream.thumbnail_url
+                                                            .replace("{width}x{height}", "440x248")
+                                                            .concat("?r=")
+                                                            .concat(String.valueOf(System.currentTimeMillis())))
                                                     .setTitle(stream.title)
                                                     .setUrl("https://www.twitch.tv/" + stream.user_name)
                                                     .addField("Стримит", stream.game_name, true)

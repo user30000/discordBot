@@ -13,11 +13,11 @@ public class SubscriptionUpdater extends TimerTask {
     @Override
     public void run() {
         try {
-            List<String> streamers = (List<String>) JavaToMySQL.getInstance().
+            List<?> streamers = (List<?>) JavaToMySQL.getInstance().
                     executeQuery(new GetOverdueSubscriptionProcedure(Prop.getInt("sub_time")));
-            for (String streamer :
+            for (Object streamer :
                     streamers) {
-                UsersResponse x = Client.getInstance().getUserInfo(streamer);
+                UsersResponse x = Client.getInstance().getUserInfo((String) streamer);
                 Client.getInstance().postUnsubOnStreamChange(x.data.get(0).id);
                 Client.getInstance().postSubOnStreamChange(x.data.get(0).id);
             }

@@ -17,14 +17,13 @@ public class Subscribe extends BaseCommand {
     Subscribe() {
         commandNames = new String[]{"sub"};
         shortDescription = "Подписка на стримы твич пользователя";
-        description = "Принимает на вход название канала.\nБот отправит сообщение в личный чат оначале стрима.";
+        description = "Принимает на вход название канала.\nБот отправит сообщение в личный чат о начале стрима.";
         example = "!sub twitchuser";
     }
 
     @Override
     public Mono<Void> execute(MessageEventContext context) {
         Options options = new Options();
-        options.addOption("c", "channel", false, "Subscribe channel on stream");
         options.addOption("e", "everyone", false, "Add @everyone on event message");
 
         boolean isEveryone = false;
@@ -59,19 +58,11 @@ public class Subscribe extends BaseCommand {
             }
         }
 
-        if (commandLine.hasOption("c")) {
-            //options means channel owner want to subscribe this channel
-            if (!context.isPrivateChannel() && context.isOwner()) {
-                if (commandLine.hasOption("e")) {
-                    isEveryone = true;
-                }
-                JavaToMySQL.getInstance().executeCall(new SubscribeProcedure(streamerTag, context.getGuildId().get().asLong(), context.getChannelId().asLong(), isEveryone));
-                return context.getChannel().flatMap(channel -> channel.createMessage("Ты подписался на " + streamerTag))
-                        .then();
+        if (!context.isPrivateChannel() && context.isOwner()) {
+            if (commandLine.hasOption("e")) {
+                isEveryone = true;
             }
-        } else {
-            //user subscribe by himself
-            JavaToMySQL.getInstance().executeCall(new SubscribeProcedure(streamerTag, context.getAuthor().getTag()));
+            JavaToMySQL.getInstance().executeCall(new SubscribeProcedure(streamerTag, context.getGuildId().get().asLong(), context.getChannelId().asLong(), isEveryone));
             return context.getChannel().flatMap(channel -> channel.createMessage("Ты подписался на " + streamerTag))
                     .then();
         }

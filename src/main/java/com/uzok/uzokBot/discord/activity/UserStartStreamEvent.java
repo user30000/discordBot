@@ -35,8 +35,7 @@ public class UserStartStreamEvent extends BaseActivityEvent {
         String userTag = Objects.requireNonNull(context.getUser().block(Duration.ofMillis(100))).getTag();
         String twitchUserName;
 
-        List<GetSubscribersByUserTag.subscriber> subs = (List<GetSubscribersByUserTag.subscriber>)
-                (JavaToMySQL.getInstance().executeQuery(new GetSubscribersByUserTag(userTag)));
+        List<?> subs = (List<?>) (JavaToMySQL.getInstance().executeQuery(new GetSubscribersByUserTag(userTag)));
 
         if (subs.isEmpty()) {
             return Mono.empty();
@@ -70,13 +69,13 @@ public class UserStartStreamEvent extends BaseActivityEvent {
                 String gameId = stream.game_id;
                 GamesResponse gamesResponse = Client.getInstance().getGameInfo(gameId);
 
-
                 subs.forEach(subscriber -> {
-                    if (subscriber.subTag != null) {
-                        usersTags.add(subscriber.subTag);
+                    GetSubscribersByUserTag.subscriber castedSub = (GetSubscribersByUserTag.subscriber) subscriber;
+                    if (castedSub.subTag != null) {
+                        usersTags.add(castedSub.subTag);
                     } else {
-                        guildsIds.add(subscriber.guidSnowflake);
-                        channelsIds.add(subscriber.channelSnowflake);
+                        guildsIds.add(castedSub.guidSnowflake);
+                        channelsIds.add(castedSub.channelSnowflake);
                     }
                 });
 
@@ -104,7 +103,10 @@ public class UserStartStreamEvent extends BaseActivityEvent {
                                 ((MessageChannel) channel).createMessage(message -> message.setEmbed(
                                         spec -> spec.setColor(Color.of(255, 0, 0))
                                                 .setAuthor(stream.user_name, null, null)
-                                                .setImage(stream.thumbnail_url.replace("{width}x{height}", "440x248"))
+                                                .setImage(stream.thumbnail_url
+                                                        .replace("{width}x{height}", "440x248")
+                                                        .concat("?r=")
+                                                        .concat(String.valueOf(System.currentTimeMillis())))
                                                 .setTitle(stream.title)
                                                 .setUrl("https://www.twitch.tv/" + stream.user_name)
                                                 .addField("Стримит", gamesResponse.data.get(0).name, true)
