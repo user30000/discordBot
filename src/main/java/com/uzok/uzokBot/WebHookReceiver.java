@@ -106,10 +106,8 @@ class WebHookReceiver {
 
                     subs.forEach(subscriber -> {
                         GetSubscribersByUserTag.subscriber castedSub = (GetSubscribersByUserTag.subscriber) subscriber;
-                        if (castedSub.subTag == null) {
-                            guildsIds.add(castedSub.guidSnowflake);
-                            channelsIds.add(castedSub.channelSnowflake);
-                        }
+                        guildsIds.add(castedSub.guidSnowflake);
+                        channelsIds.add(castedSub.channelSnowflake);
                     });
 
                     DiscordBot.getDiscordClient()
@@ -131,7 +129,7 @@ class WebHookReceiver {
                                                     .setThumbnail(gamesResponse.data.get(0).box_art_url.replace("{width}x{height}", "285x380"))
                                                     .setTimestamp(Instant.now())))
                             ).blockLast();
-                    Logger.write("Send " + subs.size() + " messages about stream starting; Username = " + stream.user_name + " UserTag = " + stream.user_name);
+                    Logger.write("Send " + subs.size() + " messages about stream starting; Username = " + stream.user_name);
                     break;
             }
         }

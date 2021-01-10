@@ -4,13 +4,6 @@ import java.sql.ResultSet;
 import java.util.Formatter;
 
 public class SubscribeProcedure extends BaseSqlProcedure {
-    public SubscribeProcedure(String streamerTag, String subTag) {
-        StringBuilder sbuf = new StringBuilder();
-        Formatter fmt = new Formatter(sbuf);
-        fmt.format("CALL `DiscordBot`.`subscribe`('%s', '%s');", streamerTag, subTag);
-        sqlQuery = sbuf.toString();
-    }
-
     public SubscribeProcedure(String streamerTag, long guildSnowflake, long channelSnowflake, boolean isEveryone) {
         StringBuilder sbuf = new StringBuilder();
         Formatter fmt = new Formatter(sbuf);
