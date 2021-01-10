@@ -3,25 +3,25 @@ package com.uzok.uzokBot.discord.command;
 import com.uzok.uzokBot.dataBase.JavaToMySQL;
 import com.uzok.uzokBot.dataBase.UnsubscribeProcedure;
 import reactor.core.publisher.Mono;
-import com.uzok.uzokBot.utils.MessageEventContext;
+import com.uzok.uzokBot.utils.context.MessageEventContext;
 
 public class Unsubscribe extends BaseCommand {
 
     Unsubscribe() {
         commandNames = new String[]{"unsub"};
         shortDescription = "Отписка от стримов пользователя";
-        description = "Принимает на вход тэг пользователя.\nОтписка от личных сообщений о начале стрима данного пользователя";
-        example = "!unsub userName#0000";
+        description = "Принимает на вход название канала.\nОтписка от сообщений о начале стрима на канале";
+        example = "!unsub twitchuser";
     }
 
     @Override
     public Mono<Void> execute(MessageEventContext context) {
-        String streamerName = context.getArg();
-        if (streamerName == null || streamerName.isEmpty() || !streamerName.matches("\\S+#\\d{4}")) {
+        String twitchChannel = context.getArg();
+        if (context.isPrivateChannel() || !context.isOwner() || twitchChannel == null || twitchChannel.isEmpty()) {
             return Mono.empty();
         }
         try {
-            JavaToMySQL.getInstance().executeCall(new UnsubscribeProcedure(context.getArg(), context.getAuthor().getTag()));
+            JavaToMySQL.getInstance().executeCall(new UnsubscribeProcedure(context.getArg(), context.getGuildId().get().asLong(), context.getChannelId().asLong()));
         }catch (Exception e){
             return Mono.empty();
         }
