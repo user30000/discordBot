@@ -3,7 +3,7 @@ package com.uzok.uzokBot.discord.command;
 import com.uzok.uzokBot.dataBase.JavaToMySQL;
 import com.uzok.uzokBot.dataBase.UnsubscribeProcedure;
 import reactor.core.publisher.Mono;
-import com.uzok.uzokBot.utils.context.MessageEventContext;
+import com.uzok.uzokBot.utils.MessageEventContext;
 
 public class Unsubscribe extends BaseCommand {
 
