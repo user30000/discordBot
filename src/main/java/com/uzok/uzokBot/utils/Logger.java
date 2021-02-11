@@ -7,10 +7,13 @@ public class Logger {
     private static Logger instance;
 
     public static void write(String msg) {
-        if(instance == null){
+        if (msg == null || msg.isEmpty()) {
+            return;
+        }
+        if (instance == null) {
             instance = new Logger();
         }
-        if(msg.length() > Prop.getInt("logLength")) {
+        if (msg.length() > Prop.getInt("logLength")) {
             JavaToMySQL.getInstance().executeCall(new LogProcedure(msg.substring(0, Prop.getInt("logLength"))));
             write(msg.substring(Prop.getInt("logLength")));
             return;

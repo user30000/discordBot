@@ -9,8 +9,9 @@ import com.uzok.uzokBot.twitch.responses.GamesResponse;
 import com.uzok.uzokBot.twitch.responses.StreamsResponse;
 import com.uzok.uzokBot.twitch.responses.UserFollowsResponse;
 import com.uzok.uzokBot.twitch.responses.UsersResponse;
-import com.uzok.uzokBot.utils.MessageEventContext;
+import com.uzok.uzokBot.utils.context.MessageEventContext;
 
+import java.io.IOException;
 import java.time.Instant;
 
 public class TwitchInfo extends BaseCommand {
@@ -19,7 +20,7 @@ public class TwitchInfo extends BaseCommand {
     }
 
     @Override
-    public Mono<Void> execute(MessageEventContext context) {
+    public Mono<Void> execute(MessageEventContext context) throws IOException {
         try {
             String userName = context.getArg();
             UsersResponse usersResponse = Client.getInstance().getUserInfo(userName);
@@ -63,7 +64,7 @@ public class TwitchInfo extends BaseCommand {
                     .then();
         } catch (Exception e) {
             e.printStackTrace();
-            return Mono.empty();
+            throw e;
         }
     }
 }

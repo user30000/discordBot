@@ -13,7 +13,7 @@ public class ActivityEventOrchestrator {
     private final Map<String, BaseActivityEvent> eventsMap;
 
     private ActivityEventOrchestrator() {
-        eventsMap = init();
+        eventsMap = init(new UserAddReactionEvent());
     }
 
     private Map<String, BaseActivityEvent> init(BaseActivityEvent... events) {

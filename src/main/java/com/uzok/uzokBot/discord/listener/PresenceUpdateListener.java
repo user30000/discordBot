@@ -5,7 +5,7 @@ import com.uzok.uzokBot.discord.activity.BaseActivityEvent;
 import discord4j.core.event.domain.PresenceUpdateEvent;
 import discord4j.core.object.presence.Presence;
 import reactor.core.publisher.Mono;
-import com.uzok.uzokBot.utils.PresenceEventContext;
+import com.uzok.uzokBot.utils.context.PresenceEventContext;
 
 import java.util.Optional;
 

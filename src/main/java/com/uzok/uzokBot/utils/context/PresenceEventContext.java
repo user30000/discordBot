@@ -1,11 +1,11 @@
-package com.uzok.uzokBot.utils;
+package com.uzok.uzokBot.utils.context;
 
 import discord4j.core.event.domain.PresenceUpdateEvent;
 import discord4j.core.object.entity.User;
 import discord4j.core.object.presence.Presence;
 import reactor.core.publisher.Mono;
 
-public class PresenceEventContext {
+public class PresenceEventContext extends EventContext{
     private final PresenceUpdateEvent event;
 
     public PresenceEventContext(PresenceUpdateEvent event) {

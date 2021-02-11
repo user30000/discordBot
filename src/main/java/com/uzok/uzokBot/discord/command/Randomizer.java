@@ -1,6 +1,6 @@
 package com.uzok.uzokBot.discord.command;
 
-import com.uzok.uzokBot.utils.MessageEventContext;
+import com.uzok.uzokBot.utils.context.MessageEventContext;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import reactor.core.publisher.Mono;

@@ -1,5 +1,6 @@
 package com.uzok.uzokBot;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -88,7 +89,9 @@ class WebHookReceiver {
                     String result = new BufferedReader(new InputStreamReader(httpExchange.getRequestBody()))
                             .lines().collect(Collectors.joining("\n"));
 
-                    WebHookStreamResponse streamResponse = new ObjectMapper().readValue((new JSONObject(result)).toString(), WebHookStreamResponse.class);
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                    WebHookStreamResponse streamResponse = objectMapper.readValue((new JSONObject(result)).toString(), WebHookStreamResponse.class);
 
                     if (streamResponse.data.isEmpty()) {
                         Logger.write("Stream data is empty");

@@ -6,7 +6,7 @@ import com.uzok.uzokBot.dataBase.SubscribeProcedure;
 import com.uzok.uzokBot.twitch.Client;
 import com.uzok.uzokBot.twitch.responses.UsersResponse;
 import com.uzok.uzokBot.utils.Logger;
-import com.uzok.uzokBot.utils.MessageEventContext;
+import com.uzok.uzokBot.utils.context.MessageEventContext;
 import org.apache.commons.cli.*;
 import reactor.core.publisher.Mono;
 
@@ -18,7 +18,7 @@ public class Subscribe extends BaseCommand {
         commandNames = new String[]{"sub"};
         shortDescription = "Подписка на стримы твич пользователя";
         description = "Принимает на вход название канала.\nБот отправит сообщение в личный чат о начале стрима.";
-        example = "!sub twitchuser";
+        example = "!sub twitchUser";
     }
 
     @Override
@@ -32,15 +32,15 @@ public class Subscribe extends BaseCommand {
         if (commandLine == null || commandLine.getArgs().length != 1) {
             return Mono.empty();
         }
-        String streamerTag = commandLine.getArgs()[0].toLowerCase();
-        if (streamerTag.isEmpty()) {
+        String twitchChannel = commandLine.getArgs()[0].toLowerCase();
+        if (twitchChannel.isEmpty()) {
             return Mono.empty();
         }
 
         //check twitch for username
         UsersResponse usersResponse;
         try {
-            usersResponse = Client.getInstance().getUserInfo(streamerTag);
+            usersResponse = Client.getInstance().getUserInfo(twitchChannel);
         } catch (IOException e) {
             Logger.write(e.getMessage() + " when command was " + context.getCommandLine());
             return Mono.empty();
@@ -50,7 +50,7 @@ public class Subscribe extends BaseCommand {
         }
 
         //check username into DB
-        if (!(boolean) (JavaToMySQL.getInstance().executeQuery(new CheckStreamIntoDB(streamerTag)))) {
+        if (!(boolean) (JavaToMySQL.getInstance().executeQuery(new CheckStreamIntoDB(twitchChannel)))) {
             try {
                 Client.getInstance().postSubOnStreamChange(usersResponse.data.get(0).id);
             } catch (IOException e) {
@@ -62,8 +62,8 @@ public class Subscribe extends BaseCommand {
             if (commandLine.hasOption("e")) {
                 isEveryone = true;
             }
-            JavaToMySQL.getInstance().executeCall(new SubscribeProcedure(streamerTag, context.getGuildId().get().asLong(), context.getChannelId().asLong(), isEveryone));
-            return context.getChannel().flatMap(channel -> channel.createMessage("Ты подписался на " + streamerTag))
+            JavaToMySQL.getInstance().executeCall(new SubscribeProcedure(twitchChannel, context.getGuildId().get().asLong(), context.getChannelId().asLong(), isEveryone));
+            return context.getChannel().flatMap(channel -> channel.createMessage("Ты подписался на " + twitchChannel))
                     .then();
         }
 

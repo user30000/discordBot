@@ -1,6 +1,6 @@
 package com.uzok.uzokBot.discord.command;
 
-import com.uzok.uzokBot.utils.MessageEventContext;
+import com.uzok.uzokBot.utils.context.MessageEventContext;
 import discord4j.rest.util.Color;
 import reactor.core.publisher.Mono;
 

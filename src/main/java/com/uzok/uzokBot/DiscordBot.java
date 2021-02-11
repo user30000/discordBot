@@ -1,5 +1,6 @@
 package com.uzok.uzokBot;
 
+import com.uzok.uzokBot.discord.listener.ReactionAddListener;
 import com.uzok.uzokBot.utils.SubscriptionUpdater;
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
@@ -34,6 +35,7 @@ public class DiscordBot {
         assert discordClient != null;
 
         register(discordClient, new PresenceUpdateListener());
+        register(discordClient, new ReactionAddListener());
         register(discordClient, new MessageCreateListener());
 
         discordClient.onDisconnect().block();

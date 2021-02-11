@@ -1,4 +1,4 @@
-package com.uzok.uzokBot.utils;
+package com.uzok.uzokBot.utils.context;
 
 import discord4j.common.util.Snowflake;
 import discord4j.core.event.domain.message.MessageCreateEvent;
@@ -13,7 +13,7 @@ import reactor.util.annotation.Nullable;
 
 import java.util.Optional;
 
-public class MessageEventContext {
+public class MessageEventContext extends EventContext {
     private final MessageCreateEvent event;
     private final String commandName;
     @Nullable
@@ -54,12 +54,20 @@ public class MessageEventContext {
         return this.event.getMessage();
     }
 
+    public String getContent() {
+        return getMessage().getContent();
+    }
+
     public Optional<Member> getMember() {
         return this.event.getMember();
     }
 
     public User getAuthor() {
         return this.getMessage().getAuthor().orElseThrow(NullPointerException::new);
+    }
+
+    public boolean isBot() {
+        return getAuthor().isBot();
     }
 
     public boolean isOwner() {

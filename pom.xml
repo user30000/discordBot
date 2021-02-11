@@ -7,7 +7,7 @@
     <groupId>com.uzok</groupId>
     <artifactId>discordBot</artifactId>
     <packaging>jar</packaging>
-    <version>0.8-BETA</version>
+    <version>0.9-BETA</version>
     <build>
         <plugins>
             <plugin>
@@ -17,6 +17,7 @@
                 <configuration>
                     <executable>java</executable>
                     <mainClass>com.uzok.uzokBot.DiscordBot</mainClass>
+                    <!--suppress UnresolvedMavenProperty -->
                     <commandlineArgs>${token}</commandlineArgs>
                 </configuration>
             </plugin>

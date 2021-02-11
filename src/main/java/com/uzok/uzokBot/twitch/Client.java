@@ -122,12 +122,16 @@ public class Client {
     }
 
     public void postSubOnStreamChange(String userId) throws IOException {
+        postSubOnStreamChange(userId, Prop.getProp("sub_time"));
+    }
+
+    public void postSubOnStreamChange(String userId, String time_s) throws IOException {
         HttpPost post = new HttpPost("https://api.twitch.tv/helix/webhooks/hub");
         List<BasicNameValuePair> nameValuePairs = new ArrayList<>(4);
         nameValuePairs.add(new BasicNameValuePair("hub.callback", "http://37.193.12.82:" + Prop.getProp("webHookPort") + "/streamHook"));
         nameValuePairs.add(new BasicNameValuePair("hub.mode", "subscribe"));
         nameValuePairs.add(new BasicNameValuePair("hub.topic", "https://api.twitch.tv/helix/streams?user_id=" + userId));
-        nameValuePairs.add(new BasicNameValuePair("hub.lease_seconds", Prop.getProp("sub_time")));
+        nameValuePairs.add(new BasicNameValuePair("hub.lease_seconds", time_s));
         post.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
         prepareRequest(post);
