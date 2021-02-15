@@ -21,11 +21,11 @@ public class Unsubscribe extends BaseCommand {
             return Mono.empty();
         }
         try {
-            JavaToMySQL.getInstance().executeCall(new UnsubscribeProcedure(context.getArg(), context.getGuildId().get().asLong(), context.getChannelId().asLong()));
+            JavaToMySQL.getInstance().executeCall(new UnsubscribeProcedure(twitchChannel.toLowerCase(), context.getGuildId().get().asLong(), context.getChannelId().asLong()));
         }catch (Exception e){
             return Mono.empty();
         }
-        return context.getChannel().flatMap(channel -> channel.createMessage("Ты отписался от " + context.getArg()))
+        return context.getChannel().flatMap(channel -> channel.createMessage("Ты отписался от " + twitchChannel))
                 .then();
     }
 }

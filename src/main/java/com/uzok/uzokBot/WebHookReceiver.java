@@ -106,11 +106,15 @@ class WebHookReceiver {
 
                     List<Long> guildsIds = new LinkedList<>();
                     List<Long> channelsIds = new LinkedList<>();
+                    List<Long> everyoneChannelsIds = new LinkedList<>();
 
                     subs.forEach(subscriber -> {
                         GetSubscribersByUserTag.subscriber castedSub = (GetSubscribersByUserTag.subscriber) subscriber;
                         guildsIds.add(castedSub.guidSnowflake);
                         channelsIds.add(castedSub.channelSnowflake);
+                        if (castedSub.isEveryone) {
+                            everyoneChannelsIds.add(castedSub.channelSnowflake);
+                        }
                     });
 
                     DiscordBot.getDiscordClient()
@@ -119,18 +123,22 @@ class WebHookReceiver {
                             .flatMap(Guild::getChannels)
                             .filter(channel -> channelsIds.contains(channel.getId().asLong()))
                             .flatMap(channel ->
-                                    ((MessageChannel) channel).createMessage(message -> message.setEmbed(
-                                            spec -> spec.setColor(Color.of(255, 0, 0))
-                                                    .setAuthor(stream.user_name, null, null)
-                                                    .setImage(stream.thumbnail_url
-                                                            .replace("{width}x{height}", "440x248")
-                                                            .concat("?r=")
-                                                            .concat(String.valueOf(System.currentTimeMillis())))
-                                                    .setTitle(stream.title)
-                                                    .setUrl("https://www.twitch.tv/" + stream.user_name)
-                                                    .addField("Стримит", stream.game_name, true)
-                                                    .setThumbnail(gamesResponse.data.get(0).box_art_url.replace("{width}x{height}", "285x380"))
-                                                    .setTimestamp(Instant.now())))
+                                    ((MessageChannel) channel).createMessage(message -> {
+                                        if (everyoneChannelsIds.contains(channel.getId().asLong())) {
+                                            message.setContent("@Everyone");
+                                        }
+                                        message.setEmbed(spec -> spec.setColor(Color.of(255, 0, 0))
+                                                .setAuthor(stream.user_name, null, null)
+                                                .setImage(stream.thumbnail_url
+                                                        .replace("{width}x{height}", "440x248")
+                                                        .concat("?r=")
+                                                        .concat(String.valueOf(System.currentTimeMillis())))
+                                                .setTitle(stream.title)
+                                                .setUrl("https://www.twitch.tv/" + stream.user_name)
+                                                .addField("Стримит", stream.game_name, true)
+                                                .setThumbnail(gamesResponse.data.get(0).box_art_url.replace("{width}x{height}", "285x380"))
+                                                .setTimestamp(Instant.now()));
+                                    })
                             ).blockLast();
                     Logger.write("Send " + subs.size() + " messages about stream starting; Username = " + stream.user_name);
                     break;
