@@ -125,7 +125,7 @@ class WebHookReceiver {
                             .flatMap(channel ->
                                     ((MessageChannel) channel).createMessage(message -> {
                                         if (everyoneChannelsIds.contains(channel.getId().asLong())) {
-                                            message.setContent("@Everyone");
+                                            message.setContent("@everyone");
                                         }
                                         message.setEmbed(spec -> spec.setColor(Color.of(255, 0, 0))
                                                 .setAuthor(stream.user_name, null, null)
